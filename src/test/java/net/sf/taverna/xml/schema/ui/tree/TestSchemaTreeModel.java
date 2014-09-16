@@ -56,7 +56,7 @@ public abstract class TestSchemaTreeModel {
         XmlSchemaCollection schemas = new XmlSchemaCollection();
         
         try {
-            InputStream in = SimpleType1Test.class.getClassLoader().getResourceAsStream(xsd);
+            InputStream in = TestSchemaTreeModel.class.getClassLoader().getResourceAsStream(xsd);
             try {
                 schemas.read(new InputStreamReader(in));
             } finally {
@@ -76,7 +76,7 @@ public abstract class TestSchemaTreeModel {
      */
     void fillModel(final String xml) {
         try {
-            InputStream in = SimpleType1Test.class.getClassLoader().getResourceAsStream(xml);
+            InputStream in = TestSchemaTreeModel.class.getClassLoader().getResourceAsStream(xml);
 
             try {
                 XMLInputFactory f = XMLInputFactory.newInstance();
