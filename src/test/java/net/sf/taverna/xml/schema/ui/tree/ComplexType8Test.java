@@ -28,6 +28,7 @@ import java.awt.BorderLayout;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.xml.namespace.QName;
@@ -37,6 +38,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import net.sf.taverna.xml.schema.ui.tree.node.XSGlobalElementNode;
 import net.sf.taverna.xml.schema.ui.tree.node.XSParticleNode;
 import net.sf.taverna.xml.schema.ui.tree.node.XSTypeNode;
@@ -55,14 +60,17 @@ import org.xml.sax.SAXException;
 
 public class ComplexType8Test extends TestSchemaTreeModel {
 
+    private final static String XML_FILE = "xs/complex_type8.xml";
+    private final static String XSD_FILE = "xs/complex_type8.xsd";
+    
     @Before
     public void loadModel() {
-        loadModel("xs/complex_type8.xsd");
+        loadModel(XSD_FILE);
     }
 
     @Test 
     public void complexTypeReadTest() {
-        fillModel("xs/complex_type8.xml");
+        fillModel(XML_FILE);
         testModel();
     }
 
@@ -72,6 +80,36 @@ public class ComplexType8Test extends TestSchemaTreeModel {
         testModel();
     }
     
+    @Test
+    public void XPathTest() throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        
+        InputStream in = ComplexType1Test.class.getClassLoader().getResourceAsStream(XML_FILE);
+        Document doc;
+        try {
+            doc = db.parse(in);
+        } finally {
+            in.close();
+        }
+        XPath xpath = XPathFactory.newInstance().newXPath();
+
+        fillModel(XML_FILE);
+
+        DefaultMutableTreeNode root = model.getRoot();
+        XSGlobalElementNode element = (XSGlobalElementNode)root.getChildAt(0);
+        XSParticleNode particleNode = (XSParticleNode)element.getChildAt(0);
+
+        XSTypeNode hobby1 = (XSTypeNode)particleNode.getChildAt(0);
+        Object hobby1_value = xpath.evaluate(hobby1.getXPath(), doc, XPathConstants.STRING);
+        Assert.assertEquals("wrong text value for the first 'hobby' element", hobby1.getUserObject(), hobby1_value);
+
+        XSTypeNode hobby2 = (XSTypeNode)particleNode.getChildAt(1);
+        Object hobby2_value = xpath.evaluate(hobby2.getXPath(), doc, XPathConstants.STRING);
+        Assert.assertEquals("wrong text value for the second 'hobby' element", hobby2.getUserObject(), hobby2_value);
+    }
+
     private void fillModel() {
         model.addElement(new QName("http://example.com","person"));
 
@@ -89,7 +127,7 @@ public class ComplexType8Test extends TestSchemaTreeModel {
         Assert.assertEquals("the sequence node should have one child node", 1, particleNode.getChildCount());
         
         TreeNode node1 = particleNode.getChildAt(0);
-        Assert.assertTrue("the child node must be represented by a particle node", node1 instanceof XSTypeNode);
+        Assert.assertTrue("the child node must be represented by a type node", node1 instanceof XSTypeNode);
         
         XSTypeNode hobby1 = (XSTypeNode)node1;
         hobby1.setUserObject("war");

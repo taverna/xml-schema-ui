@@ -60,4 +60,10 @@ public class XSMixedTextNode extends XSAbstractNode {
             stream.writeCharacters(object.toString());
         }
     }
+    
+    @Override
+    public String getXPath() {
+        XSAbstractNode parentNode = (XSAbstractNode)parent;
+        return parentNode.getXPath() + "[" + parentNode.getIndex(this) + "]";
+    }
 }

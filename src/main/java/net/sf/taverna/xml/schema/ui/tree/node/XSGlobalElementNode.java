@@ -193,4 +193,18 @@ public class XSGlobalElementNode extends XSAbstractNode<XmlSchemaElement> {
             stream.writeEndElement();
         }
     }
+    
+    @Override
+    public String getXPath() {
+        final StringBuilder xpath = new StringBuilder("/");
+        final QName qname = getName();
+        final String localpart = qname.getLocalPart();
+        final String namespace = qname.getNamespaceURI();
+        if (namespace.isEmpty()) {
+            xpath.append(localpart);
+        } else {
+            xpath.append("*[namespace-uri()='").append(namespace).append("' and local-name()='").append(localpart).append("']");
+        }
+        return xpath.toString();
+    }
 }

@@ -101,4 +101,10 @@ public class XSTypeNode extends XSAbstractNode<XmlSchemaType> {
             }
         }
     }
+    
+    @Override
+    public String getXPath() {
+        XSAbstractNode parentNode = (XSAbstractNode)parent;
+        return parentNode.getXPath() + "[position()=" + (parentNode.getIndex(this) + 1) + "]";
+    }
 }

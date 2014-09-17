@@ -102,4 +102,19 @@ public class XSAttributeNode extends XSAbstractNode<XmlSchemaAttribute> {
             throw new XMLStreamException("Required attribute missing: " + type.toString());
         }
     }
+    
+    @Override
+    public String getXPath() {
+        final XSAbstractNode parentNode = (XSAbstractNode)parent;
+        final StringBuilder xpath = new StringBuilder(parentNode.getXPath());
+        final QName qname = getName();
+        final String localpart = qname.getLocalPart();
+        final String namespace = qname.getNamespaceURI();
+        if (namespace.isEmpty()) {
+            xpath.append("/@").append(localpart);
+        } else {
+            xpath.append("/@[namespace-uri()='").append(namespace).append("' and local-name()='").append(localpart).append("']");
+        }
+        return xpath.toString();
+    }
 }

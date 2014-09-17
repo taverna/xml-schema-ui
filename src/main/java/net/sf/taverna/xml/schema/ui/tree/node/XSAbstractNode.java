@@ -103,6 +103,7 @@ public abstract class XSAbstractNode<T extends XmlSchemaObject> extends DefaultM
 
     public abstract Boolean validate();
     public abstract void write(XMLStreamWriter stream) throws XMLStreamException;
+    public abstract String getXPath();
 
     protected void setPrefix(XMLStreamWriter stream) throws XMLStreamException {
         final QName qname = getName();
