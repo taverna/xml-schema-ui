@@ -29,7 +29,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
@@ -44,6 +43,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import net.sf.taverna.xml.schema.ui.tree.node.XSAttributeNode;
 import net.sf.taverna.xml.schema.ui.tree.node.XSGlobalElementNode;
+import net.sf.taverna.xml.schema.ui.tree.node.XSRootNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -97,7 +97,7 @@ public class ComplexType3Test extends TestSchemaTreeModel {
         
         fillModel(XML_FILE);
         
-        DefaultMutableTreeNode root = model.getRoot();
+        XSRootNode root = model.getRoot();
         XSGlobalElementNode element = (XSGlobalElementNode)root.getChildAt(0);
         Object person_value = xpath.evaluate(element.getXPath(), doc, XPathConstants.STRING);
         Assert.assertEquals("wrong text value for the 'person' element", element.getUserObject(), person_value);
@@ -109,9 +109,9 @@ public class ComplexType3Test extends TestSchemaTreeModel {
     }
 
     private void fillModel() {
-        model.addElement(new QName("http://example.com", "person"));
+        model.addGlobalElement(new QName("http://example.com", "person"));
 
-        DefaultMutableTreeNode root = model.getRoot();
+        XSRootNode root = model.getRoot();
         Assert.assertTrue("the root node must have one child node", root.getChildCount() == 1);
         
         TreeNode node = root.getChildAt(0);

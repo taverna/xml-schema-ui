@@ -24,164 +24,18 @@
 
 package net.sf.taverna.xml.schema.ui.tree.node;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import org.apache.ws.commons.schema.XmlSchema;
-import org.apache.ws.commons.schema.XmlSchemaAny;
-import org.apache.ws.commons.schema.XmlSchemaCollection;
-import org.apache.ws.commons.schema.XmlSchemaElement;
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
+import net.sf.taverna.xml.schema.parser.XSParticle;
 import org.apache.ws.commons.schema.XmlSchemaParticle;
-import org.apache.ws.commons.schema.XmlSchemaType;
 
 /**
  * @author Dmitry Repchevsky
  */
 
-public class XSParticleNode extends XSAbstractNode<XmlSchemaParticle> {
+public class XSParticleNode extends XSParticle<TreeNode, MutableTreeNode> implements MutableTreeNode {
 
     public XSParticleNode(XmlSchemaParticle particle) {
         super(particle);
-    }
-
-    @Override
-    public XmlSchemaType getType() {
-        if (component instanceof XmlSchemaElement) {
-            XmlSchemaElement element = getElement((XmlSchemaElement)component);
-            XmlSchemaType type = element.getSchemaType();
-            if (type == null) {
-                QName typeName = element.getSchemaTypeName();
-                XmlSchema schema = element.getParent();
-                XmlSchemaCollection schemaCollection = schema.getParent();
-                if (schemaCollection != null) {
-                    type = schemaCollection.getTypeByQName(typeName);
-                } else {
-                    type = schema.getTypeByName(typeName);
-                }
-            }
-            
-            return type;
-        } else if (component instanceof XmlSchemaAny) {
-            
-        }
-        return null; // ??? TODO ???
-    }
-
-    @Override
-    public QName getName() {
-        if (component instanceof XmlSchemaElement) {
-            XmlSchemaElement element = getElement((XmlSchemaElement)component);
-            return element.getQName();
-        }
-        return null;
-    }
-
-    @Override
-    public Boolean validate() {
-        Boolean isValid;
-
-        final long min = component.getMinOccurs();
-        final long max = component.getMaxOccurs();
-
-        if (max > 1) {
-            int bad = 0;
-            int good = 0;
-            int total = getChildCount();
-
-            for (int i = 0; i < total; i++) {
-                XSAbstractNode child = (XSAbstractNode)getChildAt(i);
-                Boolean valid = child.validate();
-                if (valid != null) {
-                    if (valid) {
-                        good++;
-                    } else {
-                        bad++;
-                    }
-                }
-            }
-
-            // ALL values must be the same - otherwise FALSE
-            isValid = (bad == 0 && good == 0) ? null : bad == total ? null : good == total ? Boolean.TRUE : Boolean.FALSE;
-        } else {
-            int bad = 0;
-            int good = getSimpleType() != null ? getUserObject() != null ? 1 : 0 : 0;
-
-            for (int i = 0, n = getChildCount(); i < n; i++) {
-                XSAbstractNode child = (XSAbstractNode)getChildAt(i);
-                Boolean valid = child.validate();
-                if (valid != null) {
-                    if (valid) {
-                        good++;
-                    } else {
-                        bad++;
-                    }
-                }
-            }
-
-            isValid = good > 0 && bad > 0 ? Boolean.FALSE : bad > 0 ? min == 0 ? null : Boolean.FALSE : good > 0 ? Boolean.TRUE : null;
-        }
-
-        return isValid;
-    }
-
-    @Override
-    public void write(XMLStreamWriter stream) throws XMLStreamException {
-        Boolean isValid = validate();
-        if (isValid != null && isValid) {
-            setPrefix(stream);
-            
-            final QName qname = getName();
-            final String localName = qname.getLocalPart();
-            final String namespace = qname.getNamespaceURI();
-
-            final long max = component.getMaxOccurs();
-            if (max > 1) {
-                for (int i = 0, n = getChildCount(); i < n; i++) {
-                    if (namespace != null && namespace.length() > 0) {
-                        stream.writeStartElement(namespace, localName);
-                    }
-                    else {
-                        stream.writeStartElement(localName);
-                    }
-
-                    XSAbstractNode child = (XSAbstractNode)getChildAt(i);
-                    child.write(stream);
-
-                    stream.writeEndElement();
-                }
-            } else {
-                if (namespace != null && namespace.length() > 0) {
-                    stream.writeStartElement(namespace, localName);
-                } else {
-                    stream.writeStartElement(localName);
-                }
-
-                for (int i = 0, n = getChildCount(); i < n; i++) {
-                    XSAbstractNode child = (XSAbstractNode)getChildAt(i);
-                    child.write(stream);
-                }
-
-                Object object = getUserObject();
-                if (object != null) {
-                    stream.writeCharacters(object.toString());
-                }
-
-                stream.writeEndElement();
-            }
-        }
-    }
-    @Override
-    public String getXPath() {
-        final XSAbstractNode parentNode = (XSAbstractNode)parent;
-        final StringBuilder xpath = new StringBuilder(parentNode.getXPath());
-        final QName qname = getName();
-        final String localpart = qname.getLocalPart();
-        final String namespace = qname.getNamespaceURI();
-        if (namespace.isEmpty()) {
-            xpath.append('/').append(localpart);
-        } else {
-            xpath.append("/*[namespace-uri()='").append(namespace).append("' and local-name()='").append(localpart).append("']");
-        }
-        return xpath.toString();
     }
 }

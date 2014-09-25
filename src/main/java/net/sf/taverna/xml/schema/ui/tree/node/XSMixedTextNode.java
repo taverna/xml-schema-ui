@@ -24,46 +24,13 @@
 
 package net.sf.taverna.xml.schema.ui.tree.node;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import org.apache.ws.commons.schema.XmlSchemaType;
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
+import net.sf.taverna.xml.schema.parser.XSMixedText;
 
 /**
  * @author Dmitry Repchevsky
  */
 
-public class XSMixedTextNode extends XSAbstractNode {
-    public XSMixedTextNode() {
-        super(null);
-    }
-
-    @Override
-    public QName getName() {
-        return new QName("");
-    }
-
-    @Override
-    public XmlSchemaType getType() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Boolean validate() {
-        return null;
-    }
-
-    @Override
-    public void write(XMLStreamWriter stream) throws XMLStreamException {
-        Object object = getUserObject();
-        if (object != null) {
-            stream.writeCharacters(object.toString());
-        }
-    }
-    
-    @Override
-    public String getXPath() {
-        XSAbstractNode parentNode = (XSAbstractNode)parent;
-        return parentNode.getXPath() + "[" + parentNode.getIndex(this) + "]";
-    }
+public class XSMixedTextNode extends XSMixedText<TreeNode, MutableTreeNode> implements MutableTreeNode {
 }

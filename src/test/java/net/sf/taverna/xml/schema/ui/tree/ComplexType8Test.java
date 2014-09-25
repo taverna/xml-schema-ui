@@ -43,6 +43,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import net.sf.taverna.xml.schema.ui.tree.node.XSGlobalElementNode;
+import net.sf.taverna.xml.schema.ui.tree.node.XSRootNode;
 import net.sf.taverna.xml.schema.ui.tree.node.XSParticleNode;
 import net.sf.taverna.xml.schema.ui.tree.node.XSTypeNode;
 import org.junit.Assert;
@@ -97,7 +98,7 @@ public class ComplexType8Test extends TestSchemaTreeModel {
 
         fillModel(XML_FILE);
 
-        DefaultMutableTreeNode root = model.getRoot();
+        XSRootNode root = model.getRoot();
         XSGlobalElementNode element = (XSGlobalElementNode)root.getChildAt(0);
         XSParticleNode particleNode = (XSParticleNode)element.getChildAt(0);
 
@@ -111,9 +112,9 @@ public class ComplexType8Test extends TestSchemaTreeModel {
     }
 
     private void fillModel() {
-        model.addElement(new QName("http://example.com","person"));
+        model.addGlobalElement(new QName("http://example.com","person"));
 
-        DefaultMutableTreeNode root = model.getRoot();
+        XSRootNode root = model.getRoot();
         Assert.assertTrue("the root node must have one child node", root.getChildCount() == 1);
         
         TreeNode node = root.getChildAt(0);
@@ -134,7 +135,7 @@ public class ComplexType8Test extends TestSchemaTreeModel {
         
         XSTypeNode hobby2 = new XSTypeNode(hobby1.getXSComponent());
         hobby2.setUserObject("archeology");
-        ((XSParticleNode)particleNode).add(hobby2);
+        ((XSParticleNode)particleNode).insert(hobby2, particleNode.getChildCount());
     }
     
     private void testModel() {

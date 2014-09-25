@@ -28,7 +28,6 @@ import java.awt.BorderLayout;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
@@ -38,6 +37,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import net.sf.taverna.xml.schema.ui.tree.node.XSGlobalElementNode;
+import net.sf.taverna.xml.schema.ui.tree.node.XSRootNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,9 +70,9 @@ public class SimpleType1Test extends TestSchemaTreeModel {
     }
     
     private void fillModel() {
-        model.addElement(new QName("http://example.com","name"));
+        model.addGlobalElement(new QName("http://example.com","name"));
 
-        DefaultMutableTreeNode root = model.getRoot();
+        XSRootNode root = model.getRoot();
         Assert.assertTrue("there must be ONE simple elements in the model", root.getChildCount() == 1);
         
         TreeNode node = root.getChildAt(0);

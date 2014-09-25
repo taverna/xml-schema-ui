@@ -56,11 +56,9 @@ import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.plaf.TreeUI;
 import javax.swing.plaf.basic.BasicTreeUI;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
-import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.apache.ws.commons.schema.XmlSchemaChoice;
@@ -80,13 +78,14 @@ import org.apache.ws.commons.schema.XmlSchemaType;
 import net.sf.taverna.xml.schema.ui.tree.editor.XSEditorFactory;
 import net.sf.taverna.xml.schema.ui.tree.editor.XSEditorInterface;
 import net.sf.taverna.xml.schema.ui.tree.editor.XSStringEditorComponent;
-import net.sf.taverna.xml.schema.ui.tree.node.XSAbstractNode;
 import net.sf.taverna.xml.schema.ui.tree.node.XSAttributeNode;
 import net.sf.taverna.xml.schema.ui.tree.node.XSGlobalElementNode;
 import net.sf.taverna.xml.schema.ui.tree.node.XSMixedTextNode;
 import net.sf.taverna.xml.schema.ui.tree.node.XSParticleNode;
 import net.sf.taverna.xml.schema.ui.tree.node.XSTypeNode;
 import net.sf.taverna.ui.swing.IconLoader;
+import net.sf.taverna.xml.schema.parser.XSComponent;
+import net.sf.taverna.xml.schema.parser.XSModel;
 
 /**
  * @author Dmitry Repchevsky
@@ -177,13 +176,13 @@ public class XSElementTreeCellEditor extends JPanel
             add(editor.getXSEditor(), constraints);
         }
 
-        fixEditorWidth(tree, (DefaultMutableTreeNode)value);
+        fixEditorWidth(tree, (MutableTreeNode)value);
 
         return this;
     }
 
-    private void setEditor(final JTree tree, final XSAbstractNode node) {
-        XmlSchemaSimpleType simpleType = node.getSimpleType();
+    private void setEditor(final JTree tree, final XSComponent node) {
+        XmlSchemaSimpleType simpleType = XSModel.getSimpleType(node);
 
         if(simpleType == null) {
             XmlSchemaType type = node.getType();
@@ -213,15 +212,12 @@ public class XSElementTreeCellEditor extends JPanel
                     public void actionPerformed(ActionEvent e) {
                         XmlSchemaParticle particle = (XmlSchemaParticle)ed.getSelectedItem();
                         if (particle != null) {
-                            node.removeAllChildren();
-                            node.addParticle(particle);
-
-                            TreeModel m = tree.getModel();
-
-                            if (m instanceof DefaultTreeModel) {
-                                DefaultTreeModel model = (DefaultTreeModel)m;
-                                model.nodeStructureChanged(node);
+                            for (int i = node.getChildCount(); i>= 0; i--) {
+                                node.remove(i);
                             }
+                            SchemaTreeModel model = (SchemaTreeModel)tree.getModel();
+                            model.getRoot().addParticle(node, particle);
+                            model.nodeStructureChanged((TreeNode)node);
                         }
                         cancelCellEditing(); // don't update combo value (user object)
                     }
@@ -312,7 +308,7 @@ public class XSElementTreeCellEditor extends JPanel
                                 return true;
                             }
 
-                            return node.getSimpleType() != null;
+                            return XSModel.getSimpleType(node) != null;
                         } if (object instanceof XSTypeNode) {
                             XSTypeNode node = (XSTypeNode)object;
                             XmlSchemaType type = node.getXSComponent();
@@ -344,7 +340,7 @@ public class XSElementTreeCellEditor extends JPanel
                             return true;
                         } if (object instanceof XSGlobalElementNode) {
                             XSGlobalElementNode node = (XSGlobalElementNode)object;
-                            return node.getSimpleType() != null;
+                            return XSModel.getSimpleType(node) != null;
                         }
                     }
                 }
@@ -411,7 +407,7 @@ public class XSElementTreeCellEditor extends JPanel
 
             String iconName;
             
-            XmlSchemaSimpleType simpleType = node.getSimpleType();
+            XmlSchemaSimpleType simpleType = XSModel.getSimpleType(node);
             if (simpleType != null) {
                 iconName = "icons/simple.png";
             } else {
@@ -464,7 +460,7 @@ public class XSElementTreeCellEditor extends JPanel
                 if (element.getMaxOccurs() > 1) {
                     iconName = "icons/list.png";
                 } else {
-                    XmlSchemaSimpleType simpleType = node.getSimpleType();
+                    XmlSchemaSimpleType simpleType = XSModel.getSimpleType(node);
                     if (simpleType != null) {
                         iconName = "icons/simple.png";
                     } else {
@@ -483,7 +479,7 @@ public class XSElementTreeCellEditor extends JPanel
             setValueForType(node, isRenderer);
             
             final String iconName;
-            XmlSchemaSimpleType simpleType = node.getSimpleType();
+            XmlSchemaSimpleType simpleType = XSModel.getSimpleType(node);
             if (simpleType != null) {
                 iconName = "icons/simple.png";
             } else {
@@ -496,9 +492,9 @@ public class XSElementTreeCellEditor extends JPanel
             XSMixedTextNode node = (XSMixedTextNode)value;
             label.setText(isRenderer ? node.getUserObject().toString() : "");
             label.setForeground(TEXT_COLOR);
-        } else if (value instanceof XSAbstractNode) {
+        } else if (value instanceof XSComponent) {
             icon = IconLoader.load("icons/dummy.png");
-            XSAbstractNode node = (XSAbstractNode)value;
+            XSComponent node = (XSComponent)value;
             Boolean valid = node.validate();
             label.setForeground(valid == null ? DISABLED_COLOR : valid ? ENABLED_COLOR : ERROR_COLOR);
         } else {
@@ -507,9 +503,9 @@ public class XSElementTreeCellEditor extends JPanel
         label.setIcon(icon);
     }
 
-    private void setValueForType(XSAbstractNode node, boolean isRenderer) {
+    private void setValueForType(XSComponent node, boolean isRenderer) {
         
-        XmlSchemaSimpleType simpleType = node.getSimpleType();
+        XmlSchemaSimpleType simpleType = XSModel.getSimpleType(node);
         if (simpleType != null) {
             setLabel(node, isRenderer);
         } else {
@@ -567,7 +563,7 @@ public class XSElementTreeCellEditor extends JPanel
         return new ImageIcon(image);
     }
 
-    private void setLabel(XSAbstractNode node, boolean isRenderer) {
+    private void setLabel(XSComponent node, boolean isRenderer) {
         label.setText(node.getName().getLocalPart());
 
         if (isRenderer) {
@@ -587,7 +583,7 @@ public class XSElementTreeCellEditor extends JPanel
         }
     }
 
-    private void fixEditorWidth(JTree tree, DefaultMutableTreeNode xsNode) {
+    private void fixEditorWidth(JTree tree, MutableTreeNode xsNode) {
         TreeUI treeUI = tree.getUI();
         if (treeUI instanceof BasicTreeUI) {
             BasicTreeUI basicTreeUI = (BasicTreeUI)treeUI;
@@ -620,8 +616,8 @@ public class XSElementTreeCellEditor extends JPanel
         if (path != null) {
             Object o = path.getLastPathComponent();
 
-            if (o instanceof DefaultMutableTreeNode) {
-                DefaultMutableTreeNode node = (DefaultMutableTreeNode)o;
+            if (o instanceof MutableTreeNode) {
+                MutableTreeNode node = (MutableTreeNode)o;
                 editor.getXSEditor().setPreferredSize(null);
 
                 // recalculate tree size (width)

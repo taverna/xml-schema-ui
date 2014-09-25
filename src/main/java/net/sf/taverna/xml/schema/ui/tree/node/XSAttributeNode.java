@@ -24,97 +24,22 @@
 
 package net.sf.taverna.xml.schema.ui.tree.node;
 
-import javax.xml.bind.DatatypeConverter;
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import org.apache.ws.commons.schema.XmlSchema;
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
+import net.sf.taverna.xml.schema.parser.XSAttribute;
 import org.apache.ws.commons.schema.XmlSchemaAttribute;
-import org.apache.ws.commons.schema.XmlSchemaCollection;
-import org.apache.ws.commons.schema.XmlSchemaType;
-import org.apache.ws.commons.schema.XmlSchemaUse;
 
 /**
  * @author Dmitry Repchevsky
  */
 
-public class XSAttributeNode extends XSAbstractNode<XmlSchemaAttribute> {
+public class XSAttributeNode extends XSAttribute<TreeNode, MutableTreeNode> implements MutableTreeNode {
 
     public XSAttributeNode(XmlSchemaAttribute attribute) {
-        this(attribute, null);
+        super(attribute);
     }
 
     public XSAttributeNode(XmlSchemaAttribute attribute, Object object) {
         super(attribute, object);
-    }
-
-    @Override
-    public XmlSchemaType getType() {
-        XmlSchemaType simpleType = component.getSchemaType();
-        if (simpleType == null) {
-            QName typeName = component.getSchemaTypeName();
-            XmlSchema schema = component.getParent();
-            XmlSchemaCollection schemaCollection = schema.getParent();
-            if (schemaCollection != null) {
-                simpleType = schemaCollection.getTypeByQName(typeName);
-            } else {
-                simpleType = schema.getTypeByName(typeName);
-            }
-        }
-        return simpleType;
-    }
-
-    @Override
-    public QName getName() {
-        return component.getWireName();
-    }
-
-    @Override
-    public Boolean validate() {
-        if (getUserObject() != null) {
-            return Boolean.TRUE;
-        }    
-        return XmlSchemaUse.REQUIRED == component.getUse() ? Boolean.FALSE : null;
-    }
-
-    @Override
-    public void write(XMLStreamWriter stream) throws XMLStreamException {
-        QName type = getTypeName();
-        Object object = getUserObject();
-
-        if (object != null) {
-            if (object instanceof QName) {
-                object = DatatypeConverter.printQName((QName)object, stream.getNamespaceContext());
-            }
-
-            setPrefix(stream);
-            
-            final QName name = getName();
-            final String localName = name.getLocalPart();
-            final String namespace = name.getNamespaceURI();
-
-            if (namespace != null && namespace.length() > 0) {
-                stream.writeAttribute(namespace, localName, object.toString());
-            } else {
-                stream.writeAttribute(localName, object.toString());
-            }
-        } else if (XmlSchemaUse.REQUIRED == component.getUse()) {
-            throw new XMLStreamException("Required attribute missing: " + type.toString());
-        }
-    }
-    
-    @Override
-    public String getXPath() {
-        final XSAbstractNode parentNode = (XSAbstractNode)parent;
-        final StringBuilder xpath = new StringBuilder(parentNode.getXPath());
-        final QName qname = getName();
-        final String localpart = qname.getLocalPart();
-        final String namespace = qname.getNamespaceURI();
-        if (namespace.isEmpty()) {
-            xpath.append("/@").append(localpart);
-        } else {
-            xpath.append("/@[namespace-uri()='").append(namespace).append("' and local-name()='").append(localpart).append("']");
-        }
-        return xpath.toString();
     }
 }

@@ -24,87 +24,22 @@
 
 package net.sf.taverna.xml.schema.ui.tree.node;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
+import net.sf.taverna.xml.schema.parser.XSType;
 import org.apache.ws.commons.schema.XmlSchemaType;
 
 /**
- * The node to hold a type value.
- * This node is used as a child of a parent particle (usually element), which
- * cardinality is more than 1. When cardinality of the parent particle is 1 
- * there is no need to make an additional node.
- * 
  * @author Dmitry Repchevsky
  */
 
-public class XSTypeNode extends XSAbstractNode<XmlSchemaType> {
-
-    private final boolean isSimple;
+public class XSTypeNode extends XSType<TreeNode, MutableTreeNode> implements MutableTreeNode {
 
     public XSTypeNode(XmlSchemaType type) {
-        this(type, null);
+        super(type);
     }
 
     public XSTypeNode(XmlSchemaType type, Object object) {
         super(type, object);
-        
-        isSimple = getSimpleType() != null;
-    }
-
-    @Override
-    public XmlSchemaType getType() {
-        return component;
-    }
-
-    @Override
-    public QName getName() {
-        return component.getQName();
-    }
-
-    @Override
-    public Boolean validate() {
-        int bad = 0;
-        int good = isSimple ? getUserObject() != null ? 1 : 0 : 0;
-
-        for (int i = 0, n = getChildCount(); i < n; i++) {
-            XSAbstractNode child = (XSAbstractNode)getChildAt(i);
-            Boolean valid = child.validate();
-            if (valid != null) {
-                if (valid) {
-                    good++;
-                } else {
-                    bad++;
-                }
-            }
-        }
-
-        Boolean isValid = good > 0 ? bad > 0 ? Boolean.FALSE : Boolean.TRUE : null;
-        return isValid;
-    }
-
-    @Override
-    public void write(XMLStreamWriter stream) throws XMLStreamException {
-        Boolean isValid = validate();
-        if (isValid != null && isValid) {
-            // suppose that attributes are ALWAYS before elements
-            for (int i = 0, n = getChildCount(); i < n; i++) {
-                XSAbstractNode child = (XSAbstractNode)getChildAt(i);
-                child.write(stream);
-            }
-
-            if (isSimple) {
-                Object object = getUserObject();
-                if (object != null) {
-                    stream.writeCharacters(object.toString());
-                }
-            }
-        }
-    }
-    
-    @Override
-    public String getXPath() {
-        XSAbstractNode parentNode = (XSAbstractNode)parent;
-        return parentNode.getXPath() + "[position()=" + (parentNode.getIndex(this) + 1) + "]";
     }
 }
