@@ -37,8 +37,8 @@ import org.apache.ws.commons.schema.XmlSchemaSimpleTypeRestriction;
 
 public class XSEditorFactory {
     public static XSEditorInterface getXSEditorComponent(TreeCellEditor cEditor, XmlSchemaSimpleType xmlSchemaSimpleType) {
-        QName qname = xmlSchemaSimpleType.getQName();
         while(true) {
+            final QName qname = xmlSchemaSimpleType.getQName();
             if (qname != null && XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(qname.getNamespaceURI())) {
                 String name = qname.getLocalPart();
                 switch(name) {
@@ -66,7 +66,7 @@ public class XSEditorFactory {
             XmlSchemaSimpleTypeContent xmlSchemaSimpleTypeContent = xmlSchemaSimpleType.getContent();
             if (xmlSchemaSimpleTypeContent instanceof XmlSchemaSimpleTypeRestriction) {
                 XmlSchemaSimpleTypeRestriction XmlSchemaSimpleTypeRestriction = (XmlSchemaSimpleTypeRestriction)xmlSchemaSimpleTypeContent;
-                qname = XmlSchemaSimpleTypeRestriction.getBaseTypeName();
+                xmlSchemaSimpleType = XmlSchemaSimpleTypeRestriction.getBaseType();
             } else {
                 break; // no support for unions or lists
             }
