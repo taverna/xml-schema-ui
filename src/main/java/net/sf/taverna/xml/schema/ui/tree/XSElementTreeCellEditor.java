@@ -61,6 +61,7 @@ import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import javax.xml.namespace.QName;
 import org.apache.ws.commons.schema.XmlSchemaChoice;
 import org.apache.ws.commons.schema.XmlSchemaComplexContentExtension;
 import org.apache.ws.commons.schema.XmlSchemaComplexContentRestriction;
@@ -564,7 +565,8 @@ public class XSElementTreeCellEditor extends JPanel
     }
 
     private void setLabel(XSComponent node, boolean isRenderer) {
-        label.setText(node.getName().getLocalPart());
+        final QName nodeName = node.getName();
+        label.setText(nodeName == null ? "" : nodeName.getLocalPart());
 
         if (isRenderer) {
             Object o = node.getUserObject();
