@@ -624,7 +624,7 @@ public class XSModel<T, V extends T> extends XSNode<T,V> {
     public void addParticle(XSComponent component, XmlSchemaParticle particle) {
         if (particle instanceof XmlSchemaElement) {
             XSParticle node = newParticle(particle);
-            parse(node);
+            //parse(node);
             component.insert((V)node, component.getChildCount());
 
             XmlSchemaElement element = (XmlSchemaElement)particle;
@@ -633,19 +633,20 @@ public class XSModel<T, V extends T> extends XSNode<T,V> {
                 node.setUserObject(value);
             }
 
-            XmlSchemaType type = node.getType();
             
-            if (element.getMaxOccurs() > 1) {
+            
+            if (element.getMaxOccurs() <= 1) {
+                parse(node);
+            } else {
+                XmlSchemaType type = node.getType();
                 XSType tNode = newType(type);
+                parse(tNode);
                 node.insert(tNode, node.getChildCount());
 //                for (int i = 0, n = Math.max(1, (int)particle.getMinOccurs()); i < n; i++) {
 //                    XSTypeNode tNode = new XSTypeNode(type);
 //                    node.add(tNode);
 //                }
             }
-//            else {
-//                node.addType();
-//            }
         } else if (particle instanceof XmlSchemaSequence) {
             XmlSchemaSequence sequence = (XmlSchemaSequence)particle;
             List<XmlSchemaSequenceMember> items = sequence.getItems();
