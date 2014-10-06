@@ -25,10 +25,12 @@
 package net.sf.taverna.xml.schema.ui.tree;
 
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
+import net.sf.taverna.xml.schema.parser.XSNode;
 import org.apache.ws.commons.schema.XmlSchemaCollection;
 import net.sf.taverna.xml.schema.ui.tree.node.XSRootNode;
 
@@ -104,5 +106,31 @@ public class SchemaTreeModel extends DefaultTreeModel {
      */
     public void write(XMLStreamWriter stream) throws XMLStreamException {
         getRoot().write(stream);
+    }
+    
+    /**
+     * Returns the value of the node identified by the XPath query
+     * 
+     * @param xpath XPath query of the node
+     * 
+     * @return the value of the node identified by the XPath query
+     */
+    public Object getNodeValue(String xpath) {
+        XSNode node = getRoot().findNode(xpath);
+        return node == null ? null : node.getUserObject();
+    }
+    
+    /**
+     * Sets the value for the node identified by the XPath query
+     * 
+     * @param xpath XPath query of the node
+     * @param value the value to set
+     */
+    public void setNodeValue(String xpath, Object value) {
+        XSNode node = getRoot().findNode(xpath);
+        if (node != null) {
+            node.setUserObject(value);
+            fireTreeNodesChanged(node, getPathToRoot((TreeNode)node), null, null);
+        }
     }
 }

@@ -93,6 +93,36 @@ public class XSModel<T, V extends T> extends XSNode<T,V> {
     }
     
     /**
+     * Finds a node that corresponds to the provided XPath
+     * 
+     * @param xpath XPath expression for the queried node
+     * 
+     * @return the node in the model that corresponds to the XPath query
+     */
+    public XSNode<T,V> findNode(String xpath) {
+        return findComponent(this, xpath);
+    }
+    
+    private XSComponent findComponent(XSNode<T,V> node, String xpath) {
+        if (node instanceof XSComponent) {
+            XSComponent component = (XSComponent)node;
+            if (xpath.equals(component.getXPath())) {
+                return component;
+            }
+        }
+        
+        for (int i = 0, n = node.getChildCount(); i < n; i++) {
+            XSNode<T, V> childNode = (XSNode<T, V>)node.getChildAt(i);
+            XSComponent component = findComponent(childNode, xpath);
+            if (component != null) {
+                return component;
+            }
+        }
+        
+        return null;
+    }
+
+    /**
      * Includes the element (with all its subelements obtained from schema) to the model.
      *
      * @param element the element name to include into the model.
