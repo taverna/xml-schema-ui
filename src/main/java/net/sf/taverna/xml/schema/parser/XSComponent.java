@@ -98,5 +98,4 @@ public abstract class XSComponent<T,V extends T, U extends XmlSchemaObject> exte
             stream.setPrefix(prefix, namespace);
         }
     }
-
 }
