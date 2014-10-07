@@ -183,6 +183,10 @@ public class XSElementTreeCellEditor extends JPanel
     }
 
     private void setEditor(final JTree tree, final XSComponent node) {
+        if (getComponentCount() > 1) {
+            remove(1);
+        }
+        
         XmlSchemaSimpleType simpleType = XSModel.getSimpleType(node);
 
         if(simpleType == null) {
@@ -403,8 +407,8 @@ public class XSElementTreeCellEditor extends JPanel
             icon = IconLoader.load("icons/attribute.png");
         } else if (value instanceof XSTypeNode) {
             XSTypeNode node = (XSTypeNode)value;
-            setLabel(node, isRenderer);
-
+            label.setText("");
+            setValue(node);
 
             String iconName;
             
@@ -455,16 +459,17 @@ public class XSElementTreeCellEditor extends JPanel
             if (particle instanceof XmlSchemaChoice) {
                 iconName = "icons/choice.png";
             } else if (particle instanceof XmlSchemaElement) {
-                setValueForType(node, isRenderer);
-
                 final XmlSchemaElement element = (XmlSchemaElement)particle;
                 if (element.getMaxOccurs() > 1) {
+                    setLabel(node);
                     iconName = "icons/list.png";
                 } else {
                     XmlSchemaSimpleType simpleType = XSModel.getSimpleType(node);
                     if (simpleType != null) {
+                        setLabel(node, isRenderer);
                         iconName = "icons/simple.png";
                     } else {
+                        setLabel(node);
                         final XmlSchemaType type = node.getType();
                         iconName = type.isMixed() ? "icons/complex_mixed.png" : "icons/complex.png";
                     }
@@ -477,13 +482,13 @@ public class XSElementTreeCellEditor extends JPanel
         } else if (value instanceof XSGlobalElementNode) {
             XSGlobalElementNode node = (XSGlobalElementNode)value;
             
-            setValueForType(node, isRenderer);
-            
             final String iconName;
             XmlSchemaSimpleType simpleType = XSModel.getSimpleType(node);
             if (simpleType != null) {
+                setLabel(node, isRenderer);
                 iconName = "icons/simple.png";
             } else {
+                setLabel(node);
                 final XmlSchemaType type = node.getType();
                 iconName = type.isMixed() ? "icons/complex_mixed.png" : "icons/complex.png";
             }
@@ -502,28 +507,6 @@ public class XSElementTreeCellEditor extends JPanel
             icon = IconLoader.load("icons/dummy.png");
         }
         label.setIcon(icon);
-    }
-
-    private void setValueForType(XSComponent node, boolean isRenderer) {
-        
-        XmlSchemaSimpleType simpleType = XSModel.getSimpleType(node);
-        if (simpleType != null) {
-            setLabel(node, isRenderer);
-        } else {
-                StringBuilder sb = new StringBuilder();
-                sb.append("<html>");
-                sb.append(node.getName().getLocalPart());
-
-                String t = node.getTypeName().getLocalPart();
-                // the type can be embedded and has no name
-                if (t != null && t.length() > 0) {
-                    sb.append(" <font style='color: #DDDDDD'>(").append(t).append(")</font>");
-                }
-
-                sb.append("</html>");
-
-                label.setText(sb.toString()); 
-        }
     }
 
     private Icon getIndexIcon(String path, int number) {
@@ -564,24 +547,44 @@ public class XSElementTreeCellEditor extends JPanel
         return new ImageIcon(image);
     }
 
+    private void setLabel(XSComponent node) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html>");
+        sb.append(node.getName().getLocalPart());
+
+        String t = node.getTypeName().getLocalPart();
+        // the type can be embedded and has no name
+        if (t != null && t.length() > 0) {
+            sb.append(" <font style='color: #DDDDDD'>(").append(t).append(")</font>");
+        }
+
+        sb.append("</html>");
+
+        label.setText(sb.toString()); 
+    }
+
     private void setLabel(XSComponent node, boolean isRenderer) {
         final QName nodeName = node.getName();
         label.setText(nodeName == null ? "" : nodeName.getLocalPart());
 
         if (isRenderer) {
-            Object o = node.getUserObject();
-            if (o != null) {
-                String s = o.toString();
+            setValue(node);
+        }
+    }
 
-                final int eol = s.indexOf('\n');
+    private void setValue(XSComponent node) {
+        Object o = node.getUserObject();
+        if (o != null) {
+            String s = o.toString();
 
-                JTextField text = new JTextField(eol < 0 ? s : s.substring(0, eol));
-                text.setBorder(null);
+            final int eol = s.indexOf('\n');
 
-                add(text, constraints);
+            JTextField text = new JTextField(eol < 0 ? s : s.substring(0, eol));
+            text.setBorder(null);
 
-                setToolTipText(s.length() > 0 ? s : null);
-            }
+            add(text, constraints);
+
+            setToolTipText(s.length() > 0 ? s : null);
         }
     }
 

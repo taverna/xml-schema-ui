@@ -655,7 +655,6 @@ public class XSModel<T, V extends T> extends XSNode<T,V> {
     public void addParticle(XSComponent component, XmlSchemaParticle particle) {
         if (particle instanceof XmlSchemaElement) {
             XSParticle node = newParticle(particle);
-            //parse(node);
             component.insert((V)node, component.getChildCount());
 
             XmlSchemaElement element = (XmlSchemaElement)particle;
@@ -663,8 +662,6 @@ public class XSModel<T, V extends T> extends XSNode<T,V> {
             if (value != null) {
                 node.setUserObject(value);
             }
-
-            
             
             if (element.getMaxOccurs() <= 1) {
                 parse(node);
