@@ -290,8 +290,9 @@ public class XSModel<T, V extends T> extends XSNode<T,V> {
                         throw new XMLStreamException("Simple type " + type.getQName() + " cannot have children! ");
                     }
                 }
-            } else if (eventType == XMLStreamReader.CHARACTERS ||
-                       eventType == XMLStreamReader.CDATA) {
+            } else if (parent.getParent() != null && 
+                      (eventType == XMLStreamReader.CHARACTERS ||
+                       eventType == XMLStreamReader.CDATA)) {
                 text.append(reader.getText()); //.append(LINE_SEPARATOR);
 
                 XSComponent node = (XSComponent)parent;
